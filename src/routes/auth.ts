@@ -39,6 +39,7 @@ export async function signup(c: Context<AppEnv>) {
   const { data: signUpData, error: signUpError } = await anon.auth.signUp({
     email: body.email,
     password: body.password,
+    options: { data: { tipo: 'usuario', nome: body.nome, cpf } },
   })
 
   if (signUpError || !signUpData.user) {
@@ -53,23 +54,6 @@ export async function signup(c: Context<AppEnv>) {
         pending_email_confirmation: true,
       },
       201,
-    )
-  }
-
-  const asUser = getAnonClient(c)
-  await asUser.auth.setSession({
-    access_token: signUpData.session.access_token,
-    refresh_token: signUpData.session.refresh_token,
-  })
-
-  const { error: usuarioError } = await asUser
-    .from('usuarios')
-    .insert({ id: signUpData.user.id, cpf, nome: body.nome })
-
-  if (usuarioError) {
-    return c.json(
-      { error: `Conta criada, mas falhou ao salvar o perfil: ${usuarioError.message}` },
-      500,
     )
   }
 
