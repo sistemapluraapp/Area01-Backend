@@ -2,7 +2,12 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { requireAuth } from './middleware/auth'
 import { signup, login } from './routes/auth'
-import { obterPerfil, atualizarPerfil } from './routes/perfil'
+import {
+  obterPerfil,
+  atualizarPerfil,
+  atualizarAvatar,
+  minhasColaboracoes,
+} from './routes/perfil'
 import { buscarPaginas, obterPagina } from './routes/paginas'
 import { criarAvaliacao, minhasAvaliacoes } from './routes/avaliacoes'
 import {
@@ -30,6 +35,8 @@ app.get('/paginas/:id', obterPagina)
 // Perfil pessoal (autenticado)
 app.get('/perfil', requireAuth, obterPerfil)
 app.put('/perfil', requireAuth, atualizarPerfil)
+app.post('/perfil/avatar', requireAuth, atualizarAvatar)
+app.get('/minhas-colaboracoes', requireAuth, minhasColaboracoes)
 
 // Avaliações (autenticado)
 app.post('/paginas/:id/avaliacoes', requireAuth, criarAvaliacao)

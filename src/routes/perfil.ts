@@ -1,36 +1,181 @@
 import type { Context } from 'hono'
 import type { AppEnv } from '../types'
 
+const NECESSIDADES_VALIDAS = [
+  'visual',
+  'auditiva',
+  'motora',
+  'intelectual',
+  'tea',
+  'neurodivergencia',
+  'nenhuma',
+] as const
+
+const EXTENSOES_VALIDAS = ['jpg', 'jpeg', 'png', 'webp'] as const
+
+const TAMANHO_MAXIMO_AVATAR = 5 * 1024 * 1024
+
 export async function obterPerfil(c: Context<AppEnv>) {
   const supabase = c.get('supabase')
   const userId = c.get('userId')
 
   const { data, error } = await supabase
     .from('usuarios')
-    .select('id, cpf, nome, created_at')
+    .select(
+      'id, cpf, nome, nome_social, avatar_url, cep, endereco, complemento, necessidades_acessibilidade, created_at'
+    )
     .eq('id', userId)
     .single()
 
   if (error) return c.json({ error: 'Perfil não encontrado' }, 404)
-  return c.json(data)
+
+  const [{ count: paginasAdministradas }, { count: colaboracoes }] = await Promise.all([
+    supabase
+      .from('vinculos')
+      .select('id', { count: 'exact', head: true })
+      .eq('usuario_id', userId)
+      .eq('papel', 'administrador'),
+    supabase
+      .from('vinculos')
+      .select('id', { count: 'exact', head: true })
+      .eq('usuario_id', userId)
+      .eq('papel', 'colaborador'),
+  ])
+
+  return c.json({
+    ...data,
+    paginas_administradas: paginasAdministradas ?? 0,
+    colaboracoes: colaboracoes ?? 0,
+  })
+}
+
+interface AtualizarPerfilBody {
+  nome?: string
+  nome_social?: string | null
+  cep?: string | null
+  endereco?: string | null
+  complemento?: string | null
+  necessidades_acessibilidade?: string[]
 }
 
 export async function atualizarPerfil(c: Context<AppEnv>) {
   const supabase = c.get('supabase')
   const userId = c.get('userId')
-  const body = await c.req.json<{ nome?: string }>().catch(() => null)
+  const body = await c.req.json<AtualizarPerfilBody>().catch(() => null)
 
   if (!body?.nome) {
     return c.json({ error: 'Campo obrigatório: nome' }, 400)
   }
 
+  if (body.necessidades_acessibilidade !== undefined) {
+    const valido =
+      Array.isArray(body.necessidades_acessibilidade) &&
+      body.necessidades_acessibilidade.every((item) =>
+        (NECESSIDADES_VALIDAS as readonly string[]).includes(item)
+      )
+    if (!valido) {
+      return c.json(
+        {
+          error: `Campo necessidades_acessibilidade deve ser um array com valores dentre: ${NECESSIDADES_VALIDAS.join(', ')}`,
+        },
+        400
+      )
+    }
+  }
+
+  const atualizacao: Record<string, unknown> = { nome: body.nome }
+  if (body.nome_social !== undefined) atualizacao.nome_social = body.nome_social
+  if (body.cep !== undefined) atualizacao.cep = body.cep
+  if (body.endereco !== undefined) atualizacao.endereco = body.endereco
+  if (body.complemento !== undefined) atualizacao.complemento = body.complemento
+  if (body.necessidades_acessibilidade !== undefined)
+    atualizacao.necessidades_acessibilidade = body.necessidades_acessibilidade
+
   const { data, error } = await supabase
     .from('usuarios')
-    .update({ nome: body.nome })
+    .update(atualizacao)
     .eq('id', userId)
-    .select('id, cpf, nome, created_at')
+    .select(
+      'id, cpf, nome, nome_social, avatar_url, cep, endereco, complemento, necessidades_acessibilidade, created_at'
+    )
     .single()
 
   if (error) return c.json({ error: error.message }, 400)
   return c.json(data)
+}
+
+interface AtualizarAvatarBody {
+  imagem_base64?: string
+  extensao?: string
+}
+
+export async function atualizarAvatar(c: Context<AppEnv>) {
+  const supabase = c.get('supabase')
+  const userId = c.get('userId')
+  const body = await c.req.json<AtualizarAvatarBody>().catch(() => null)
+
+  if (!body?.imagem_base64 || !body?.extensao) {
+    return c.json({ error: 'Campos obrigatórios: imagem_base64, extensao' }, 400)
+  }
+
+  const extensao = body.extensao.toLowerCase()
+  if (!(EXTENSOES_VALIDAS as readonly string[]).includes(extensao)) {
+    return c.json(
+      { error: `Campo extensao deve ser um dentre: ${EXTENSOES_VALIDAS.join(', ')}` },
+      400
+    )
+  }
+
+  let bytes: Uint8Array
+  try {
+    bytes = Uint8Array.from(atob(body.imagem_base64), (ch) => ch.charCodeAt(0))
+  } catch {
+    return c.json({ error: 'Campo imagem_base64 inválido' }, 400)
+  }
+
+  if (bytes.byteLength > TAMANHO_MAXIMO_AVATAR) {
+    return c.json({ error: 'Imagem excede o tamanho máximo de 5MB' }, 400)
+  }
+
+  const path = `${userId}/avatar.${extensao}`
+  const contentType = `image/${extensao === 'jpg' ? 'jpeg' : extensao}`
+
+  const { error: uploadError } = await supabase.storage
+    .from('avatars')
+    .upload(path, bytes, { contentType, upsert: true })
+
+  if (uploadError) return c.json({ error: uploadError.message }, 500)
+
+  const {
+    data: { publicUrl },
+  } = supabase.storage.from('avatars').getPublicUrl(path)
+
+  const { error: updateError } = await supabase
+    .from('usuarios')
+    .update({ avatar_url: publicUrl })
+    .eq('id', userId)
+
+  if (updateError) return c.json({ error: updateError.message }, 500)
+
+  return c.json({ avatar_url: publicUrl })
+}
+
+export async function minhasColaboracoes(c: Context<AppEnv>) {
+  const supabase = c.get('supabase')
+  const userId = c.get('userId')
+
+  const { data, error } = await supabase
+    .from('vinculos')
+    .select('id, papel, paginas(id, nome, tipo, descricao)')
+    .eq('usuario_id', userId)
+    .eq('papel', 'colaborador')
+
+  if (error) return c.json({ error: error.message }, 500)
+
+  const colaboracoes = (data ?? []).map((item: Record<string, unknown>) => ({
+    ...item,
+    paginas: Array.isArray(item.paginas) ? (item.paginas[0] ?? null) : item.paginas,
+  }))
+
+  return c.json({ colaboracoes })
 }
