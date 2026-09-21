@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { requireAuth } from './middleware/auth'
-import { signup, login } from './routes/auth'
+import { signup, login, refresh } from './routes/auth'
 import {
   obterPerfil,
   atualizarPerfil,
@@ -27,6 +27,7 @@ app.get('/health', (c) => c.json({ status: 'ok', area: c.env.AREA, service: 'bac
 // Autenticação (1 conta por CPF)
 app.post('/auth/signup', signup)
 app.post('/auth/login', login)
+app.post('/auth/refresh', refresh)
 
 // Busca pública de Páginas (sem login)
 app.get('/paginas', buscarPaginas)
