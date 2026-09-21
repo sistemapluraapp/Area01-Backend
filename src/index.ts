@@ -5,6 +5,12 @@ import { signup, login } from './routes/auth'
 import { obterPerfil, atualizarPerfil } from './routes/perfil'
 import { buscarPaginas, obterPagina } from './routes/paginas'
 import { criarAvaliacao, minhasAvaliacoes } from './routes/avaliacoes'
+import {
+  listarNotificacoes,
+  contarNaoLidas,
+  marcarComoLida,
+  marcarTodasComoLidas,
+} from './routes/notificacoes'
 import type { AppEnv } from './types'
 
 const app = new Hono<AppEnv>()
@@ -28,5 +34,11 @@ app.put('/perfil', requireAuth, atualizarPerfil)
 // Avaliações (autenticado)
 app.post('/paginas/:id/avaliacoes', requireAuth, criarAvaliacao)
 app.get('/me/avaliacoes', requireAuth, minhasAvaliacoes)
+
+// Notificações (autenticado)
+app.get('/notificacoes', requireAuth, listarNotificacoes)
+app.get('/notificacoes/contagem-nao-lidas', requireAuth, contarNaoLidas)
+app.patch('/notificacoes/:id/ler', requireAuth, marcarComoLida)
+app.patch('/notificacoes/marcar-todas-lidas', requireAuth, marcarTodasComoLidas)
 
 export default app
