@@ -1,15 +1,29 @@
 import { Hono } from 'hono'
+import { requireAuth } from './middleware/auth'
+import { signup, login } from './routes/auth'
+import { obterPerfil, atualizarPerfil } from './routes/perfil'
+import { buscarPaginas, obterPagina } from './routes/paginas'
+import { criarAvaliacao, minhasAvaliacoes } from './routes/avaliacoes'
+import type { AppEnv } from './types'
 
-type Bindings = {
-  SUPABASE_URL: string
-  SUPABASE_ANON_KEY: string
-  AREA: string
-}
+const app = new Hono<AppEnv>()
 
-const app = new Hono<{ Bindings: Bindings }>()
+app.get('/health', (c) => c.json({ status: 'ok', area: c.env.AREA, service: 'backend' }))
 
-app.get('/health', (c) =>
-  c.json({ status: 'ok', area: c.env.AREA, service: 'backend' })
-)
+// Autenticação (1 conta por CPF)
+app.post('/auth/signup', signup)
+app.post('/auth/login', login)
+
+// Busca pública de Páginas (sem login)
+app.get('/paginas', buscarPaginas)
+app.get('/paginas/:id', obterPagina)
+
+// Perfil pessoal (autenticado)
+app.get('/perfil', requireAuth, obterPerfil)
+app.put('/perfil', requireAuth, atualizarPerfil)
+
+// Avaliações (autenticado)
+app.post('/paginas/:id/avaliacoes', requireAuth, criarAvaliacao)
+app.get('/me/avaliacoes', requireAuth, minhasAvaliacoes)
 
 export default app
