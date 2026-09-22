@@ -2,13 +2,16 @@ import type { Context } from 'hono'
 import { getAnonClient } from '../lib/supabase'
 import type { AppEnv } from '../types'
 
+const PAGINA_COLUNAS_PUBLICAS =
+  'id, tipo, nome, descricao, categoria, cep, endereco, cidade, uf, complemento, logo_url, capa_url, fotos_urls, recursos_acessibilidade, youtube, instagram, facebook, tiktok, website, created_at'
+
 export async function buscarPaginas(c: Context<AppEnv>) {
   const termo = c.req.query('q')?.trim()
   const supabase = getAnonClient(c)
 
   let query = supabase
     .from('paginas')
-    .select('id, tipo, nome, descricao, created_at')
+    .select(PAGINA_COLUNAS_PUBLICAS)
     .order('created_at', { ascending: false })
     .limit(50)
 
@@ -27,7 +30,7 @@ export async function obterPagina(c: Context<AppEnv>) {
 
   const { data: pagina, error } = await supabase
     .from('paginas')
-    .select('id, tipo, nome, descricao, created_at')
+    .select(PAGINA_COLUNAS_PUBLICAS)
     .eq('id', id)
     .single()
 
