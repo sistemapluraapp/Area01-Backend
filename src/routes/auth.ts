@@ -87,10 +87,18 @@ export async function login(c: Context<AppEnv>) {
     return c.json({ error: 'E-mail ou senha inválidos' }, 401)
   }
 
-  // Registro de login para os indicadores da Área04 — melhor esforço,
-  // uma falha aqui nunca deve impedir o login de completar.
+  const userClient = getUserClient(c, data.session.access_token)
+
+  const { data: perfil } = await userClient.from('usuarios').select('suspenso').eq('id', data.user.id).single()
+  if (perfil?.suspenso) {
+    return c.json(
+      { error: 'Esta conta foi suspensa. Entre em contato com a equipe da Plura.', suspensa: true },
+      403,
+    )
+  }
+
+  // Registro de login para os indicadores da Área04 — melhor esforço.
   try {
-    const userClient = getUserClient(c, data.session.access_token)
     await userClient.from('login_eventos').insert({ origem: 'pessoa_empresa', usuario_id: data.user.id })
   } catch {
     // ignora

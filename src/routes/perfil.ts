@@ -13,7 +13,7 @@ export async function obterPerfil(c: Context<AppEnv>) {
   const { data, error } = await supabase
     .from('usuarios')
     .select(
-      'id, cpf, nome, nome_social, avatar_url, cep, endereco, complemento, necessidades_acessibilidade, created_at'
+      'id, cpf, nome, nome_social, avatar_url, cep, endereco, cidade, uf, complemento, necessidades_acessibilidade, created_at'
     )
     .eq('id', userId)
     .single()
@@ -45,6 +45,8 @@ interface AtualizarPerfilBody {
   nome_social?: string | null
   cep?: string | null
   endereco?: string | null
+  cidade?: string | null
+  uf?: string | null
   complemento?: string | null
   necessidades_acessibilidade?: string[]
 }
@@ -85,6 +87,8 @@ export async function atualizarPerfil(c: Context<AppEnv>) {
   if (body.nome_social !== undefined) atualizacao.nome_social = body.nome_social
   if (body.cep !== undefined) atualizacao.cep = body.cep
   if (body.endereco !== undefined) atualizacao.endereco = body.endereco
+  if (body.cidade !== undefined) atualizacao.cidade = body.cidade
+  if (body.uf !== undefined) atualizacao.uf = body.uf
   if (body.complemento !== undefined) atualizacao.complemento = body.complemento
   if (body.necessidades_acessibilidade !== undefined)
     atualizacao.necessidades_acessibilidade = body.necessidades_acessibilidade
@@ -94,7 +98,7 @@ export async function atualizarPerfil(c: Context<AppEnv>) {
     .update(atualizacao)
     .eq('id', userId)
     .select(
-      'id, cpf, nome, nome_social, avatar_url, cep, endereco, complemento, necessidades_acessibilidade, created_at'
+      'id, cpf, nome, nome_social, avatar_url, cep, endereco, cidade, uf, complemento, necessidades_acessibilidade, created_at'
     )
     .single()
 

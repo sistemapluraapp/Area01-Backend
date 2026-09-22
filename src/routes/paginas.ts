@@ -12,6 +12,7 @@ export async function buscarPaginas(c: Context<AppEnv>) {
   let query = supabase
     .from('paginas')
     .select(PAGINA_COLUNAS_PUBLICAS)
+    .eq('suspensa', false)
     .order('created_at', { ascending: false })
     .limit(50)
 
