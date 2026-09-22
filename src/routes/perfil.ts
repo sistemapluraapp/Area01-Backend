@@ -1,34 +1,6 @@
 import type { Context } from 'hono'
+import { getAnonClient } from '../lib/supabase'
 import type { AppEnv } from '../types'
-
-// Árvore de necessidades de acessibilidade: cada folha é um valor válido de
-// necessidades_acessibilidade (texto plano, sem hierarquia no banco — o
-// agrupamento por categoria é só de exibição no frontend). "nenhuma" é
-// mutuamente exclusiva com as demais (validado apenas no frontend).
-const NECESSIDADES_VALIDAS = [
-  // Mobilidade / PCD
-  'mobilidade_cadeira_rodas',
-  'mobilidade_deslocamento_reduzido',
-  'mobilidade_amputacao_maos_bracos',
-  'mobilidade_amputacao_pes_pernas',
-  'mobilidade_bengala_muleta',
-  // Visão
-  'visao_cego',
-  'visao_baixa_visao',
-  'visao_daltonismo',
-  'visao_miopia_severa',
-  // Audição
-  'audicao_surdez_total',
-  'audicao_baixa_audicao',
-  'audicao_aparelho_auditivo',
-  'audicao_interprete_libras',
-  // Cognitivo / Neurodivergência
-  'cognitivo_tea',
-  'cognitivo_tdah',
-  'cognitivo_deficiencia_intelectual',
-  'cognitivo_sobrecarga_sensorial',
-  'nenhuma',
-] as const
 
 const EXTENSOES_VALIDAS = ['jpg', 'jpeg', 'png', 'webp'] as const
 
@@ -87,16 +59,23 @@ export async function atualizarPerfil(c: Context<AppEnv>) {
   }
 
   if (body.necessidades_acessibilidade !== undefined) {
-    const valido =
-      Array.isArray(body.necessidades_acessibilidade) &&
-      body.necessidades_acessibilidade.every((item) =>
-        (NECESSIDADES_VALIDAS as readonly string[]).includes(item)
-      )
+    if (!Array.isArray(body.necessidades_acessibilidade)) {
+      return c.json({ error: 'Campo necessidades_acessibilidade deve ser um array' }, 400)
+    }
+
+    const anon = getAnonClient(c)
+    const { data: validas, error: erroValidas } = await anon
+      .from('filtros_acessibilidade')
+      .select('codigo')
+      .eq('tipo', 'necessidade_pessoal')
+
+    if (erroValidas) return c.json({ error: erroValidas.message }, 500)
+
+    const codigosValidos = new Set((validas ?? []).map((f) => f.codigo))
+    const valido = body.necessidades_acessibilidade.every((item) => codigosValidos.has(item))
     if (!valido) {
       return c.json(
-        {
-          error: `Campo necessidades_acessibilidade deve ser um array com valores dentre: ${NECESSIDADES_VALIDAS.join(', ')}`,
-        },
+        { error: 'Campo necessidades_acessibilidade contém valores inválidos' },
         400
       )
     }
