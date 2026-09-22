@@ -10,6 +10,7 @@ import {
 } from './routes/perfil'
 import { buscarPaginas, obterPagina } from './routes/paginas'
 import { criarAvaliacao, minhasAvaliacoes } from './routes/avaliacoes'
+import { listarFavoritos, adicionarFavorito, removerFavorito } from './routes/favoritos'
 import {
   listarNotificacoes,
   contarNaoLidas,
@@ -38,6 +39,11 @@ app.get('/perfil', requireAuth, obterPerfil)
 app.put('/perfil', requireAuth, atualizarPerfil)
 app.post('/perfil/avatar', requireAuth, atualizarAvatar)
 app.get('/minhas-colaboracoes', requireAuth, minhasColaboracoes)
+
+// Favoritos (autenticado)
+app.get('/favoritos', requireAuth, listarFavoritos)
+app.post('/favoritos/:id', requireAuth, adicionarFavorito)
+app.delete('/favoritos/:id', requireAuth, removerFavorito)
 
 // Avaliações (autenticado)
 app.post('/paginas/:id/avaliacoes', requireAuth, criarAvaliacao)
