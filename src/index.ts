@@ -11,6 +11,7 @@ import {
 import { buscarPaginas, obterPagina } from './routes/paginas'
 import { criarAvaliacao, minhasAvaliacoes } from './routes/avaliacoes'
 import { listarFavoritos, adicionarFavorito, removerFavorito } from './routes/favoritos'
+import { listarFiltrosAcessibilidade } from './routes/filtros'
 import {
   listarNotificacoes,
   contarNaoLidas,
@@ -33,6 +34,9 @@ app.post('/auth/refresh', refresh)
 // Busca pública de Páginas (sem login)
 app.get('/paginas', buscarPaginas)
 app.get('/paginas/:id', obterPagina)
+
+// Filtros de acessibilidade (público, gerenciado pela Área04)
+app.get('/filtros-acessibilidade', listarFiltrosAcessibilidade)
 
 // Perfil pessoal (autenticado)
 app.get('/perfil', requireAuth, obterPerfil)
