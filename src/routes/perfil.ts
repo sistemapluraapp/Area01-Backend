@@ -1,13 +1,32 @@
 import type { Context } from 'hono'
 import type { AppEnv } from '../types'
 
+// Árvore de necessidades de acessibilidade: cada folha é um valor válido de
+// necessidades_acessibilidade (texto plano, sem hierarquia no banco — o
+// agrupamento por categoria é só de exibição no frontend). "nenhuma" é
+// mutuamente exclusiva com as demais (validado apenas no frontend).
 const NECESSIDADES_VALIDAS = [
-  'visual',
-  'auditiva',
-  'motora',
-  'intelectual',
-  'tea',
-  'neurodivergencia',
+  // Mobilidade / PCD
+  'mobilidade_cadeira_rodas',
+  'mobilidade_deslocamento_reduzido',
+  'mobilidade_amputacao_maos_bracos',
+  'mobilidade_amputacao_pes_pernas',
+  'mobilidade_bengala_muleta',
+  // Visão
+  'visao_cego',
+  'visao_baixa_visao',
+  'visao_daltonismo',
+  'visao_miopia_severa',
+  // Audição
+  'audicao_surdez_total',
+  'audicao_baixa_audicao',
+  'audicao_aparelho_auditivo',
+  'audicao_interprete_libras',
+  // Cognitivo / Neurodivergência
+  'cognitivo_tea',
+  'cognitivo_tdah',
+  'cognitivo_deficiencia_intelectual',
+  'cognitivo_sobrecarga_sensorial',
   'nenhuma',
 ] as const
 
