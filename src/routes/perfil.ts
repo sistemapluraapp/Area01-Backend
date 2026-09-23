@@ -13,7 +13,7 @@ export async function obterPerfil(c: Context<AppEnv>) {
   const { data, error } = await supabase
     .from('usuarios')
     .select(
-      'id, cpf, nome, nome_social, avatar_url, cep, endereco, cidade, uf, complemento, necessidades_acessibilidade, created_at'
+      'id, cpf, nome, nome_social, avatar_url, cep, endereco, cidade, uf, complemento, necessidades_acessibilidade, preferencias_turismo, created_at'
     )
     .eq('id', userId)
     .single()
@@ -49,6 +49,7 @@ interface AtualizarPerfilBody {
   uf?: string | null
   complemento?: string | null
   necessidades_acessibilidade?: string[]
+  preferencias_turismo?: string[]
 }
 
 export async function atualizarPerfil(c: Context<AppEnv>) {
@@ -83,6 +84,22 @@ export async function atualizarPerfil(c: Context<AppEnv>) {
     }
   }
 
+  if (body.preferencias_turismo !== undefined) {
+    if (!Array.isArray(body.preferencias_turismo)) {
+      return c.json({ error: 'Campo preferencias_turismo deve ser um array' }, 400)
+    }
+    const { data: validas, error: erroValidas } = await getAnonClient(c)
+      .from('catalogo_itens')
+      .select('codigo')
+      .eq('tipo', 'preferencia_turismo')
+      .eq('ativo', true)
+    if (erroValidas) return c.json({ error: erroValidas.message }, 500)
+    const codigos = new Set((validas ?? []).map((i) => i.codigo))
+    if (!body.preferencias_turismo.every((p) => codigos.has(p))) {
+      return c.json({ error: 'Campo preferencias_turismo contém valores inválidos' }, 400)
+    }
+  }
+
   const atualizacao: Record<string, unknown> = { nome: body.nome }
   if (body.nome_social !== undefined) atualizacao.nome_social = body.nome_social
   if (body.cep !== undefined) atualizacao.cep = body.cep
@@ -92,13 +109,14 @@ export async function atualizarPerfil(c: Context<AppEnv>) {
   if (body.complemento !== undefined) atualizacao.complemento = body.complemento
   if (body.necessidades_acessibilidade !== undefined)
     atualizacao.necessidades_acessibilidade = body.necessidades_acessibilidade
+  if (body.preferencias_turismo !== undefined) atualizacao.preferencias_turismo = [...new Set(body.preferencias_turismo)]
 
   const { data, error } = await supabase
     .from('usuarios')
     .update(atualizacao)
     .eq('id', userId)
     .select(
-      'id, cpf, nome, nome_social, avatar_url, cep, endereco, cidade, uf, complemento, necessidades_acessibilidade, created_at'
+      'id, cpf, nome, nome_social, avatar_url, cep, endereco, cidade, uf, complemento, necessidades_acessibilidade, preferencias_turismo, created_at'
     )
     .single()
 

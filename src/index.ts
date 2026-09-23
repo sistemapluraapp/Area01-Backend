@@ -8,7 +8,9 @@ import {
   atualizarAvatar,
   minhasColaboracoes,
 } from './routes/perfil'
-import { buscarPaginas, obterPagina } from './routes/paginas'
+import { buscarPaginas, obterPagina, denunciarInformacao } from './routes/paginas'
+import { listarCatalogo } from './routes/catalogo'
+import { compartilharPagina } from './routes/compartilhar'
 import { criarAvaliacao, minhasAvaliacoes } from './routes/avaliacoes'
 import { listarFavoritos, adicionarFavorito, removerFavorito } from './routes/favoritos'
 import { listarFiltrosAcessibilidade } from './routes/filtros'
@@ -31,9 +33,16 @@ app.post('/auth/signup', signup)
 app.post('/auth/login', login)
 app.post('/auth/refresh', refresh)
 
-// Busca pública de Páginas (sem login)
-app.get('/paginas', buscarPaginas)
-app.get('/paginas/:id', obterPagina)
+// Busca e página do empreendimento (exigem login)
+app.get('/paginas', requireAuth, buscarPaginas)
+app.get('/paginas/:id', requireAuth, obterPagina)
+app.post('/paginas/:id/denuncias', requireAuth, denunciarInformacao)
+
+// Link de compartilhamento com prévia (público; redireciona para o site)
+app.get('/s/:id', compartilharPagina)
+
+// Catálogo de rótulos/ícones mantido pela Área 04 (público)
+app.get('/catalogo', listarCatalogo)
 
 // Filtros de acessibilidade (público, gerenciado pela Área04)
 app.get('/filtros-acessibilidade', listarFiltrosAcessibilidade)

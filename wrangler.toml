@@ -10,3 +10,5 @@ SUPABASE_URL = "https://uoembacxxnkuwldmdgcu.supabase.co"
 # aqui como var normal, não como secret.
 SUPABASE_ANON_KEY = "sb_publishable_LHnLAUk6M4ek94aokap89g__nL-ySby"
 AREA = "01"
+# Site da Área 01 (destino do link de compartilhamento /s/:id)
+FRONTEND_URL = "https://area01-frontend.pages.dev"
