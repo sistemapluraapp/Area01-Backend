@@ -157,7 +157,9 @@ export async function atualizarAvatar(c: Context<AppEnv>) {
     return c.json({ error: 'Imagem excede o tamanho máximo de 5MB' }, 400)
   }
 
-  const path = `${userId}/avatar.${extensao}`
+  // Nome com carimbo de tempo: a URL muda a cada envio e o navegador não
+  // mostra a foto antiga do cache.
+  const path = `${userId}/avatar-${Date.now()}.${extensao}`
   const contentType = `image/${extensao === 'jpg' ? 'jpeg' : extensao}`
 
   const { error: uploadError } = await supabase.storage
