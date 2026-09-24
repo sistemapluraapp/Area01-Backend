@@ -3,7 +3,7 @@ import type { AppEnv } from '../types'
 
 // Colunas exibidas nos cards da busca e dos destinos salvos
 export const PAGINA_COLUNAS_CARD =
-  'id, tipo, nome, subtitulo, descricao_curta, categoria, cidade, uf, logo_url, capa_url, tema, faixa_preco, recursos_acessibilidade, destaques_acessibilidade, created_at'
+  'id, tipo, nome, subtitulo, descricao_curta, categoria, cidade, uf, logo_url, capa_url, tema, faixa_preco, recursos_acessibilidade, destaques_acessibilidade, video_libras, created_at'
 
 // Colunas da página pública (sem CNPJ e dados internos)
 const PAGINA_COLUNAS_PUBLICAS = [
@@ -13,7 +13,7 @@ const PAGINA_COLUNAS_PUBLICAS = [
   'ponto_referencia, como_chegar_carro, como_chegar_transporte, rota_acessivel',
   'horarios, feriados, requer_agendamento, tempo_medio, antecedencia',
   'logo_url, capa_url, recursos_acessibilidade, destaques_acessibilidade, observacoes_recursos',
-  'antes_de_ir, antes_de_ir_observacoes, seguranca, created_at, updated_at',
+  'antes_de_ir, antes_de_ir_observacoes, seguranca, como_e_o_lugar, video_libras, created_at, updated_at',
 ].join(', ')
 
 type Nota = { total: number; media: number | null }
@@ -53,6 +53,8 @@ export async function buscarPaginas(c: Context<AppEnv>) {
   if (termo) query = query.or(`nome.ilike.%${termo}%,cidade.ilike.%${termo}%,subtitulo.ilike.%${termo}%`)
   if (categoria) query = query.eq('categoria', categoria)
   if (recursos?.length) query = query.contains('recursos_acessibilidade', recursos)
+  // Só lugares com apresentação em Libras (vídeo com intérprete)
+  if (c.req.query('libras') === '1') query = query.not('video_libras', 'is', null)
 
   const { data, error } = await query
   if (error) return c.json({ error: error.message }, 500)
