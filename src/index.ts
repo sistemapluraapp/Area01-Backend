@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { requireAuth } from './middleware/auth'
+import { optionalAuth, requireAuth } from './middleware/auth'
 import { signup, login, refresh } from './routes/auth'
 import {
   obterPerfil,
@@ -34,7 +34,8 @@ app.post('/auth/login', login)
 app.post('/auth/refresh', refresh)
 
 // Busca e página do empreendimento (exigem login)
-app.get('/paginas', requireAuth, buscarPaginas)
+// A busca é aberta a visitantes; a página completa de cada lugar pede login.
+app.get('/paginas', optionalAuth, buscarPaginas)
 app.get('/paginas/:id', requireAuth, obterPagina)
 app.post('/paginas/:id/denuncias', requireAuth, denunciarInformacao)
 

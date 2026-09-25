@@ -1,6 +1,6 @@
 import type { Next } from 'hono'
 import type { Context } from 'hono'
-import { getUserClient } from '../lib/supabase'
+import { getAnonClient, getUserClient } from '../lib/supabase'
 import type { AppEnv } from '../types'
 
 export async function requireAuth(c: Context<AppEnv>, next: Next) {
@@ -20,4 +20,15 @@ export async function requireAuth(c: Context<AppEnv>, next: Next) {
   c.set('supabase', supabase)
   c.set('userId', data.user.id)
   await next()
+}
+
+// Login opcional: visitante sem token navega como anônimo (as políticas do
+// banco só liberam o que é público); com token, vale o login normalmente.
+export async function optionalAuth(c: Context<AppEnv>, next: Next) {
+  if (!c.req.header('Authorization')) {
+    c.set('supabase', getAnonClient(c))
+    c.set('userId', '')
+    return next()
+  }
+  return requireAuth(c, next)
 }
