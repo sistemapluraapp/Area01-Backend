@@ -34,9 +34,9 @@ app.post('/auth/login', login)
 app.post('/auth/refresh', refresh)
 
 // Busca e página do empreendimento (exigem login)
-// A busca é aberta a visitantes; a página completa de cada lugar pede login.
+// Busca e página completa são abertas a visitantes; salvar, avaliar e denunciar pedem login.
 app.get('/paginas', optionalAuth, buscarPaginas)
-app.get('/paginas/:id', requireAuth, obterPagina)
+app.get('/paginas/:id', optionalAuth, obterPagina)
 app.post('/paginas/:id/denuncias', requireAuth, denunciarInformacao)
 
 // Link de compartilhamento com prévia (público; redireciona para o site)
