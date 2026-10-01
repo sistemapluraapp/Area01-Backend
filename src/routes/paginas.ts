@@ -14,6 +14,7 @@ const PAGINA_COLUNAS_PUBLICAS = [
   'horarios, feriados, requer_agendamento, tempo_medio, antecedencia',
   'logo_url, capa_url, recursos_acessibilidade, destaques_acessibilidade, observacoes_recursos',
   'antes_de_ir, antes_de_ir_observacoes, seguranca, como_e_o_lugar, video_libras, created_at, updated_at',
+  'contatos, mapa_link, localizacao_comentarios',
 ].join(', ')
 
 type Nota = { total: number; media: number | null }
@@ -47,6 +48,7 @@ export async function buscarPaginas(c: Context<AppEnv>) {
     .from('paginas')
     .select(PAGINA_COLUNAS_CARD)
     .eq('suspensa', false)
+    .is('excluida_em', null)
     .order('created_at', { ascending: false })
     .limit(60)
 
@@ -75,7 +77,7 @@ function embaralhar<T>(lista: T[]): T[] {
 // aleatória. Sem recursos marcados, usa a mesma categoria.
 async function recomendacoes(c: Context<AppEnv>, pagina: { id: string; recursos_acessibilidade: string[]; categoria: string | null }) {
   const supabase = c.get('supabase')
-  let query = supabase.from('paginas').select(PAGINA_COLUNAS_CARD).eq('suspensa', false).neq('id', pagina.id).limit(40)
+  let query = supabase.from('paginas').select(PAGINA_COLUNAS_CARD).eq('suspensa', false).is('excluida_em', null).neq('id', pagina.id).limit(40)
   if (pagina.recursos_acessibilidade?.length) query = query.overlaps('recursos_acessibilidade', pagina.recursos_acessibilidade)
   else if (pagina.categoria) query = query.eq('categoria', pagina.categoria)
   const { data } = await query
@@ -86,11 +88,11 @@ export async function obterPagina(c: Context<AppEnv>) {
   const supabase = c.get('supabase')
   const id = c.req.param('id') as string
 
-  const colunas: string = `${PAGINA_COLUNAS_PUBLICAS}, suspensa`
+  const colunas: string = `${PAGINA_COLUNAS_PUBLICAS}, suspensa, excluida_em`
   const { data, error } = await supabase.from('paginas').select(colunas).eq('id', id).single()
-  const pagina = data as unknown as ({ id: string; suspensa: boolean; recursos_acessibilidade: string[]; categoria: string | null } & Record<string, unknown>) | null
-  if (error || !pagina || pagina.suspensa) return c.json({ error: 'Página não encontrada' }, 404)
-  const { suspensa: _, ...publica } = pagina
+  const pagina = data as unknown as ({ id: string; suspensa: boolean; excluida_em: string | null; recursos_acessibilidade: string[]; categoria: string | null } & Record<string, unknown>) | null
+  if (error || !pagina || pagina.suspensa || pagina.excluida_em) return c.json({ error: 'Página não encontrada' }, 404)
+  const { suspensa: _, excluida_em: __, ...publica } = pagina
 
   const [{ data: midias }, { data: experiencias }, { data: avaliacoes }, sugeridas] = await Promise.all([
     supabase.from('pagina_midias').select('id, tipo, url, plataforma, formato, categoria, legenda, texto_alt, ordem').eq('pagina_id', id).order('ordem'),

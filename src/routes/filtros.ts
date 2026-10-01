@@ -13,8 +13,9 @@ export async function listarFiltrosAcessibilidade(c: Context<AppEnv>) {
 
   if (error) return c.json({ error: error.message }, 500)
 
-  const recursos_local = (data ?? []).filter((f) => f.tipo === 'recurso_local')
-  const necessidades_pessoal = (data ?? []).filter((f) => f.tipo === 'necessidade_pessoal')
+  const ordenados = [...(data ?? [])].sort((a, b) => a.rotulo.localeCompare(b.rotulo, 'pt-BR', { sensitivity: 'base' }))
+  const recursos_local = ordenados.filter((f) => f.tipo === 'recurso_local')
+  const necessidades_pessoal = ordenados.filter((f) => f.tipo === 'necessidade_pessoal')
 
   return c.json({ recursos_local, necessidades_pessoal })
 }

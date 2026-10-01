@@ -16,11 +16,11 @@ export async function compartilharPagina(c: Context<AppEnv>) {
 
   const { data: p } = await getAnonClient(c)
     .from('paginas')
-    .select('nome, subtitulo, descricao_curta, capa_url, logo_url, cidade, uf, suspensa')
+    .select('nome, subtitulo, descricao_curta, capa_url, logo_url, cidade, uf, suspensa, excluida_em')
     .eq('id', id)
     .single()
 
-  if (!p || p.suspensa) return c.redirect(c.env.FRONTEND_URL, 302)
+  if (!p || p.suspensa || p.excluida_em) return c.redirect(c.env.FRONTEND_URL, 302)
 
   const local = [p.cidade, p.uf].filter(Boolean).join('/')
   const titulo = escapar(`${p.nome}${p.subtitulo ? ` · ${p.subtitulo}` : ''} | Plura`)
