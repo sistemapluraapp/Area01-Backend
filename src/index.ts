@@ -20,7 +20,7 @@ import {
   marcarComoLida,
   marcarTodasComoLidas,
 } from './routes/notificacoes'
-import { obterConteudoPagina, reenviarConfirmacao } from './routes/conteudo'
+import { obterConteudoPagina, obterTermo, reenviarConfirmacao } from './routes/conteudo'
 import type { AppEnv } from './types'
 
 const app = new Hono<AppEnv>()
@@ -35,6 +35,7 @@ app.post('/auth/login', login)
 app.post('/auth/refresh', refresh)
 app.post('/auth/reenviar-confirmacao', reenviarConfirmacao)
 app.get('/conteudo/:chave', obterConteudoPagina)
+app.get('/termos/:chave', obterTermo)
 
 // Busca e página do empreendimento (exigem login)
 // Busca e página completa são abertas a visitantes; salvar, avaliar e denunciar pedem login.

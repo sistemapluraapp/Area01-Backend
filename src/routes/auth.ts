@@ -9,6 +9,7 @@ interface SignupBody {
   password?: string
   cpf?: string
   nome?: string
+  aceite_termos?: boolean
 }
 
 interface LoginBody {
@@ -41,10 +42,14 @@ export async function signup(c: Context<AppEnv>) {
     return c.json({ error: 'Este CPF já está cadastrado' }, 409)
   }
 
+  if (body.aceite_termos !== true) {
+    return c.json({ error: 'É preciso aceitar os termos e condições para criar a conta' }, 400)
+  }
+
   const { data: signUpData, error: signUpError } = await anon.auth.signUp({
     email: body.email,
     password: body.password,
-    options: { emailRedirectTo: urlContaConfirmada(c), data: { tipo: 'usuario', nome: body.nome, cpf } },
+    options: { emailRedirectTo: urlContaConfirmada(c), data: { termos_aceitos: { chave: 'termos_usuario', em: new Date().toISOString() }, tipo: 'usuario', nome: body.nome, cpf } },
   })
 
   if (signUpError || !signUpData.user) {
