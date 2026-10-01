@@ -2,6 +2,7 @@ import type { Context } from 'hono'
 import { getAnonClient, getUserClient } from '../lib/supabase'
 import { isValidCpf, normalizeCpf } from '../lib/cpf'
 import type { AppEnv } from '../types'
+import { urlContaConfirmada } from './conteudo'
 
 interface SignupBody {
   email?: string
@@ -43,7 +44,7 @@ export async function signup(c: Context<AppEnv>) {
   const { data: signUpData, error: signUpError } = await anon.auth.signUp({
     email: body.email,
     password: body.password,
-    options: { data: { tipo: 'usuario', nome: body.nome, cpf } },
+    options: { emailRedirectTo: urlContaConfirmada(c), data: { tipo: 'usuario', nome: body.nome, cpf } },
   })
 
   if (signUpError || !signUpData.user) {
