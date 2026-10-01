@@ -13,7 +13,7 @@ AREA = "01"
 # Site da Área 01 (destino do link de compartilhamento /s/:id)
 FRONTEND_URL = "https://plura.app.br"
 
-# Ambiente de teste (branch claude/clever-knuth-bx0368): Worker separado,
+# Ambiente de teste (branches claude/clever-knuth-bx0368 e claude/stoic-babbage-0gea8e): Worker separado,
 # area01-backend-teste. Publicado por .github/workflows/deploy-teste.yml
 [env.teste]
 name = "area01-backend-teste"
