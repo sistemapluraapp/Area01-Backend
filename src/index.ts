@@ -13,6 +13,7 @@ import { listarCatalogo } from './routes/catalogo'
 import { compartilharPagina } from './routes/compartilhar'
 import { criarAvaliacao, minhasAvaliacoes } from './routes/avaliacoes'
 import { listarFavoritos, adicionarFavorito, removerFavorito } from './routes/favoritos'
+import { adicionarLocalFavorito, definirAvisosEmail, listarLocaisFavoritos, removerLocalFavorito } from './routes/locaisFavoritos'
 import { listarFiltrosAcessibilidade } from './routes/filtros'
 import {
   listarNotificacoes,
@@ -65,6 +66,10 @@ app.get('/minhas-colaboracoes', requireAuth, minhasColaboracoes)
 app.get('/favoritos', requireAuth, listarFavoritos)
 app.post('/favoritos/:id', requireAuth, adicionarFavorito)
 app.delete('/favoritos/:id', requireAuth, removerFavorito)
+app.get('/locais-favoritos', requireAuth, listarLocaisFavoritos)
+app.post('/locais-favoritos', requireAuth, adicionarLocalFavorito)
+app.delete('/locais-favoritos/:id', requireAuth, removerLocalFavorito)
+app.put('/locais-favoritos/avisos-email', requireAuth, definirAvisosEmail)
 
 // Avaliações (autenticado)
 app.post('/paginas/:id/avaliacoes', requireAuth, criarAvaliacao)
