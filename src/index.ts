@@ -12,6 +12,7 @@ import { buscarPaginas, obterPagina, denunciarInformacao } from './routes/pagina
 import { listarCatalogo } from './routes/catalogo'
 import { compartilharPagina } from './routes/compartilhar'
 import { criarAvaliacao, minhasAvaliacoes } from './routes/avaliacoes'
+import { agendaEventos, eventosDaPagina, marcarInteresseEvento, meusEventos, removerInteresseEvento } from './routes/eventos'
 import { listarFavoritos, adicionarFavorito, removerFavorito } from './routes/favoritos'
 import { adicionarLocalFavorito, definirAvisosEmail, listarLocaisFavoritos, removerLocalFavorito } from './routes/locaisFavoritos'
 import { listarFiltrosAcessibilidade } from './routes/filtros'
@@ -45,6 +46,11 @@ app.get('/localidades/:pais/estados/:estado/cidades', listarCidades)
 // Busca e página completa são abertas a visitantes; salvar, avaliar e denunciar pedem login.
 app.get('/paginas', optionalAuth, buscarPaginas)
 app.get('/paginas/:id', optionalAuth, obterPagina)
+app.get('/paginas/:id/eventos', optionalAuth, eventosDaPagina)
+app.get('/eventos', optionalAuth, agendaEventos)
+app.post('/eventos/:id/interesse', requireAuth, marcarInteresseEvento)
+app.delete('/eventos/:id/interesse', requireAuth, removerInteresseEvento)
+app.get('/meus-eventos', requireAuth, meusEventos)
 app.post('/paginas/:id/denuncias', requireAuth, denunciarInformacao)
 
 // Link de compartilhamento com prévia (público; redireciona para o site)
