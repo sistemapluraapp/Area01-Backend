@@ -3,13 +3,13 @@ import type { AppEnv } from '../types'
 
 // Colunas exibidas nos cards da busca e dos destinos salvos
 export const PAGINA_COLUNAS_CARD =
-  'id, tipo, nome, subtitulo, descricao_curta, categoria, cidade, uf, logo_url, capa_url, tema, faixa_preco, recursos_acessibilidade, destaques_acessibilidade, video_libras, created_at'
+  'id, tipo, nome, subtitulo, descricao_curta, categoria, cidade, uf, pais, logo_url, capa_url, tema, faixa_preco, recursos_acessibilidade, destaques_acessibilidade, video_libras, created_at'
 
 // Colunas da página pública (sem CNPJ e dados internos)
 const PAGINA_COLUNAS_PUBLICAS = [
   'id, tipo, nome, subtitulo, descricao_curta, descricao, slogan, diferencial, categoria, faixa_preco, tags, tema',
   'whatsapp, instagram, website, video_apresentacao',
-  'cep, endereco, cidade, uf, complemento, latitude, longitude',
+  'pais, cep, endereco, cidade, uf, complemento, latitude, longitude',
   'ponto_referencia, como_chegar_carro, como_chegar_transporte, rota_acessivel',
   'horarios, feriados, requer_agendamento, tempo_medio, antecedencia',
   'logo_url, capa_url, recursos_acessibilidade, destaques_acessibilidade, observacoes_recursos',

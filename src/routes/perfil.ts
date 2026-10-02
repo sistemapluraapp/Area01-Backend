@@ -13,7 +13,7 @@ export async function obterPerfil(c: Context<AppEnv>) {
   const { data, error } = await supabase
     .from('usuarios')
     .select(
-      'id, cpf, nome, nome_social, avatar_url, cep, endereco, cidade, uf, complemento, necessidades_acessibilidade, preferencias_turismo, created_at'
+      'id, cpf, nome, nome_social, avatar_url, pais, cep, endereco, cidade, uf, complemento, necessidades_acessibilidade, preferencias_turismo, created_at'
     )
     .eq('id', userId)
     .single()
@@ -47,6 +47,7 @@ interface AtualizarPerfilBody {
   endereco?: string | null
   cidade?: string | null
   uf?: string | null
+  pais?: string
   complemento?: string | null
   necessidades_acessibilidade?: string[]
   preferencias_turismo?: string[]
@@ -106,6 +107,10 @@ export async function atualizarPerfil(c: Context<AppEnv>) {
   if (body.endereco !== undefined) atualizacao.endereco = body.endereco
   if (body.cidade !== undefined) atualizacao.cidade = body.cidade
   if (body.uf !== undefined) atualizacao.uf = body.uf
+  if (body.pais !== undefined) {
+    if (typeof body.pais !== 'string' || !/^[A-Za-z]{2}$/.test(body.pais)) return c.json({ error: 'País inválido' }, 400)
+    atualizacao.pais = body.pais.toUpperCase()
+  }
   if (body.complemento !== undefined) atualizacao.complemento = body.complemento
   if (body.necessidades_acessibilidade !== undefined)
     atualizacao.necessidades_acessibilidade = body.necessidades_acessibilidade
@@ -116,7 +121,7 @@ export async function atualizarPerfil(c: Context<AppEnv>) {
     .update(atualizacao)
     .eq('id', userId)
     .select(
-      'id, cpf, nome, nome_social, avatar_url, cep, endereco, cidade, uf, complemento, necessidades_acessibilidade, preferencias_turismo, created_at'
+      'id, cpf, nome, nome_social, avatar_url, pais, cep, endereco, cidade, uf, complemento, necessidades_acessibilidade, preferencias_turismo, created_at'
     )
     .single()
 
