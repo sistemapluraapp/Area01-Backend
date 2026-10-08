@@ -1,3 +1,4 @@
+import { verificarCertificado } from './routes/verificacao'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { optionalAuth, requireAuth } from './middleware/auth'
@@ -42,6 +43,7 @@ app.post('/auth/refresh', refresh)
 app.post('/auth/reenviar-confirmacao', reenviarConfirmacao)
 app.get('/conteudo/:chave', obterConteudoPagina)
 app.get('/termos/:chave', obterTermo)
+app.get('/verificar/:codigo', verificarCertificado)
 app.get('/localidades/:pais/estados', listarEstados)
 app.get('/localidades/:pais/estados/:estado/cidades', listarCidades)
 

@@ -96,11 +96,13 @@ export async function obterPagina(c: Context<AppEnv>) {
   if (error || !pagina || pagina.suspensa || pagina.excluida_em) return c.json({ error: 'Página não encontrada' }, 404)
   const { suspensa: _, excluida_em: __, ...publica } = pagina
 
-  const [{ data: midias }, { data: experiencias }, { data: avaliacoes }, sugeridas] = await Promise.all([
+  const [{ data: midias }, { data: experiencias }, { data: avaliacoes }, sugeridas, { data: certificacoes }] = await Promise.all([
     supabase.from('pagina_midias').select('id, tipo, url, plataforma, formato, categoria, legenda, texto_alt, ordem').eq('pagina_id', id).order('ordem'),
     supabase.from('experiencias').select('*').eq('pagina_id', id).eq('ativo', true).order('ordem'),
     supabase.rpc('avaliacoes_publicas', { p_pagina_id: id }),
     recomendacoes(c, pagina),
+    // Selos de certificação válidos (8e)
+    supabase.rpc('certificacoes_publicas_pagina', { p_pagina_id: id }),
   ])
 
   const lista = (avaliacoes ?? []) as { nota: number }[]
@@ -114,6 +116,7 @@ export async function obterPagina(c: Context<AppEnv>) {
     nota_media: media,
     total_avaliacoes: lista.length,
     recomendacoes: sugeridas,
+    certificacoes: certificacoes ?? [],
   })
 }
 
