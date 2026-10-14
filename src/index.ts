@@ -1,3 +1,4 @@
+import { landingInteresse, landingMidia, landingPagina, landingSite, landingTrack } from './routes/landing'
 import { verificarCertificado } from './routes/verificacao'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
@@ -44,6 +45,12 @@ app.post('/auth/reenviar-confirmacao', reenviarConfirmacao)
 app.get('/conteudo/:chave', obterConteudoPagina)
 app.get('/termos/:chave', obterTermo)
 app.get('/verificar/:codigo', verificarCertificado)
+// Landing page (Etapa 9)
+app.get('/landing/site', landingSite)
+app.get('/landing/paginas/:slug', landingPagina)
+app.post('/landing/interesse', landingInteresse)
+app.post('/landing/track', landingTrack)
+app.get('/landing/midia/*', landingMidia)
 app.get('/localidades/:pais/estados', listarEstados)
 app.get('/localidades/:pais/estados/:estado/cidades', listarCidades)
 
