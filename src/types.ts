@@ -1,6 +1,8 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 
 export type Bindings = {
+  // Limite de tentativas por IP (src/lib/limite.ts); binding ratelimit do wrangler.toml
+  LIMITE?: { limit(opcoes: { key: string }): Promise<{ success: boolean }> }
   // Arquivos da biblioteca de mídia da landing (prefixo landing/ do bucket)
   CERTIFICACOES: R2Bucket
   CSC_API_KEY?: string

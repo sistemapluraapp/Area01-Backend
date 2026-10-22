@@ -3,6 +3,7 @@ import { verificarCertificado } from './routes/verificacao'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { optionalAuth, requireAuth } from './middleware/auth'
+import { limitarPorIp } from './lib/limite'
 import { signup, login, refresh } from './routes/auth'
 import {
   obterPerfil,
@@ -32,6 +33,13 @@ import type { AppEnv } from './types'
 const app = new Hono<AppEnv>()
 
 app.use('*', cors())
+
+// Limite de tentativas por IP (lib/limite.ts)
+app.use('/auth/signup', limitarPorIp('auth'))
+app.use('/auth/login', limitarPorIp('auth'))
+app.use('/auth/recuperar-senha', limitarPorIp('auth'))
+app.use('/auth/redefinir-senha', limitarPorIp('auth'))
+app.use('/auth/reenviar-confirmacao', limitarPorIp('auth'))
 
 app.get('/health', (c) => c.json({ status: 'ok', area: c.env.AREA, service: 'backend' }))
 
